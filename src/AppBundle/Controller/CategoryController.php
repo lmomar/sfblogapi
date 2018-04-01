@@ -80,6 +80,7 @@ class CategoryController extends Controller
      * )
      * )
      */
+
     public function putCategoryAction(Request $request)
     {
         $em = $this->getDoctrine()->getManager();
@@ -112,12 +113,12 @@ class CategoryController extends Controller
     {
         $page = $request->get('page');
         $em = $this->getDoctrine()->getManager();
-        $categories = $em->getRepository(Category::class)->paginate($page,$this->container->getParameter('articles_per_page'));
+        $categories = $em->getRepository(Category::class)->paginate($page, $this->container->getParameter('articles_per_page'));
         $pagination = array(
             'count' => count($categories),
             'page' => (int)$page,
             'nbPages' => ceil(count($categories) / $this->container->getParameter('articles_per_page')),
-            'route' => $this->generateUrl('app_category_getcategories',array('page' => $page)),
+            'route' => $this->generateUrl('app_category_getcategories', array('page' => $page)),
             'paramsRoute' => array()
         );
 
@@ -154,8 +155,10 @@ class CategoryController extends Controller
         return true;
     }
 
+
     /**
-     * @Rest\Get(path="/categories_old")
+     * @return Category[]|array
+     * @Rest\Get(path="/categories")
      * @Rest\View()
      * @SWG\Tag(name="Category")
      * @SWG\Response(
@@ -169,6 +172,5 @@ class CategoryController extends Controller
         $em = $this->getDoctrine()->getManager();
         $categories = $em->getRepository(Category::class)->findAll();
         return $categories;
-
     }
 }

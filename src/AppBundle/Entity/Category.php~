@@ -3,7 +3,10 @@
 namespace AppBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+<<<<<<< HEAD
 use Symfony\Component\Validator\Constraints as Assert;
+=======
+>>>>>>> 2e9f606ccfd6eb368eebc7825ba16847a2a01074
 
 /**
  * Category
@@ -13,11 +16,14 @@ use Symfony\Component\Validator\Constraints as Assert;
  */
 class Category
 {
+<<<<<<< HEAD
     public function __construct()
     {
         $this->createdAt = new \DateTime();
     }
 
+=======
+>>>>>>> 2e9f606ccfd6eb368eebc7825ba16847a2a01074
     /**
      * @var int
      *
@@ -30,8 +36,11 @@ class Category
     /**
      * @var string
      *
+<<<<<<< HEAD
      * @Assert\NotNull()
      * @Assert\NotBlank()
+=======
+>>>>>>> 2e9f606ccfd6eb368eebc7825ba16847a2a01074
      * @ORM\Column(name="name", type="string", length=255)
      */
     private $name;
@@ -102,3 +111,7 @@ class Category
         return $this->createdAt;
     }
 }
+<<<<<<< HEAD
+=======
+
+>>>>>>> 2e9f606ccfd6eb368eebc7825ba16847a2a01074

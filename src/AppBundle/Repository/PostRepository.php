@@ -1,7 +1,9 @@
 <?php
 
 namespace AppBundle\Repository;
+
 use Doctrine\ORM\Tools\Pagination\Paginator;
+
 
 /**
  * PostRepository
@@ -11,6 +13,7 @@ use Doctrine\ORM\Tools\Pagination\Paginator;
  */
 class PostRepository extends \Doctrine\ORM\EntityRepository
 {
+
     public function paginate($page, $nbPerPage){
         $qb = $this->createQueryBuilder('p')
             ->select('p','c')

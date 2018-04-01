@@ -210,7 +210,7 @@ class appDevDebugProjectContainerUrlMatcher extends Symfony\Bundle\FrameworkBund
                 not_app_category_getcategories:
 
                 // app_category_getallcategories
-                if ('/api/categories_old' === $pathinfo) {
+                if ('/api/categories' === $pathinfo) {
                     $ret = array (  '_controller' => 'AppBundle\\Controller\\CategoryController::getAllCategoriesAction',  '_route' => 'app_category_getallcategories',);
                     if (!in_array($canonicalMethod, array('GET'))) {
                         $allow = array_merge($allow, array('GET'));

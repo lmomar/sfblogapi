@@ -21,6 +21,7 @@ use Symfony\Component\Routing\Annotation\Route;
 class StudentController extends Controller
 {
     /**
+     * web interface
      * @param Request $request
      * @Route(path="/student/add")
      * @return Response
@@ -38,6 +39,7 @@ class StudentController extends Controller
     }
 
     /**
+     * Api
      * @param Request $request
      * @return \Symfony\Component\Form\FormInterface
      * @Rest\Post(path="/api/student/add")

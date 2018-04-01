@@ -4,7 +4,9 @@ namespace AppBundle\Controller;
 
 use AppBundle\Entity\Category;
 use AppBundle\Entity\Post;
+
 use AppBundle\Entity\Product;
+
 use AppBundle\Form\PostType;
 use FOS\RestBundle\Controller\Annotations as Rest;
 use Nelmio\ApiDocBundle\Annotation\Model;
@@ -137,6 +139,7 @@ class PostController extends Controller
         return $post;
     }
 
+
     /**
      * @param Request $request
      * @return JsonResponse
@@ -188,6 +191,5 @@ class PostController extends Controller
         $em->flush();
         return true;
     }
-
 
 }

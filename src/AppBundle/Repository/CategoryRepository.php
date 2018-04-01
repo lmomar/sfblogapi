@@ -26,4 +26,5 @@ class CategoryRepository extends \Doctrine\ORM\EntityRepository
         }
         return $paginator;
     }
+
 }
