@@ -21,18 +21,16 @@ class appDevDebugProjectContainerUrlMatcher extends Symfony\Bundle\FrameworkBund
         $pathinfo = rawurldecode($rawPathinfo);
         $trimmedPathinfo = rtrim($pathinfo, '/');
         $context = $this->context;
-        $request = $this->request;
+        $request = $this->request ?: $this->createRequest($pathinfo);
         $requestMethod = $canonicalMethod = $context->getMethod();
-        $scheme = $context->getScheme();
 
         if ('HEAD' === $requestMethod) {
             $canonicalMethod = 'GET';
         }
 
-
         if (0 === strpos($pathinfo, '/_')) {
             // _wdt
-            if (0 === strpos($pathinfo, '/_wdt') && preg_match('#^/_wdt/(?P<token>[^/]++)$#s', $pathinfo, $matches)) {
+            if (0 === strpos($pathinfo, '/_wdt') && preg_match('#^/_wdt/(?P<token>[^/]++)$#sD', $pathinfo, $matches)) {
                 return $this->mergeDefaults(array_replace($matches, array('_route' => '_wdt')), array (  '_controller' => 'web_profiler.controller.profiler:toolbarAction',));
             }
 
@@ -40,12 +38,17 @@ class appDevDebugProjectContainerUrlMatcher extends Symfony\Bundle\FrameworkBund
                 // _profiler_home
                 if ('/_profiler' === $trimmedPathinfo) {
                     $ret = array (  '_controller' => 'web_profiler.controller.profiler:homeAction',  '_route' => '_profiler_home',);
-                    if (substr($pathinfo, -1) !== '/') {
+                    if ('/' === substr($pathinfo, -1)) {
+                        // no-op
+                    } elseif ('GET' !== $canonicalMethod) {
+                        goto not__profiler_home;
+                    } else {
                         return array_replace($ret, $this->redirect($rawPathinfo.'/', '_profiler_home'));
                     }
 
                     return $ret;
                 }
+                not__profiler_home:
 
                 if (0 === strpos($pathinfo, '/_profiler/search')) {
                     // _profiler_search
@@ -66,7 +69,7 @@ class appDevDebugProjectContainerUrlMatcher extends Symfony\Bundle\FrameworkBund
                 }
 
                 // _profiler_search_results
-                if (preg_match('#^/_profiler/(?P<token>[^/]++)/search/results$#s', $pathinfo, $matches)) {
+                if (preg_match('#^/_profiler/(?P<token>[^/]++)/search/results$#sD', $pathinfo, $matches)) {
                     return $this->mergeDefaults(array_replace($matches, array('_route' => '_profiler_search_results')), array (  '_controller' => 'web_profiler.controller.profiler:searchResultsAction',));
                 }
 
@@ -76,29 +79,29 @@ class appDevDebugProjectContainerUrlMatcher extends Symfony\Bundle\FrameworkBund
                 }
 
                 // _profiler
-                if (preg_match('#^/_profiler/(?P<token>[^/]++)$#s', $pathinfo, $matches)) {
+                if (preg_match('#^/_profiler/(?P<token>[^/]++)$#sD', $pathinfo, $matches)) {
                     return $this->mergeDefaults(array_replace($matches, array('_route' => '_profiler')), array (  '_controller' => 'web_profiler.controller.profiler:panelAction',));
                 }
 
                 // _profiler_router
-                if (preg_match('#^/_profiler/(?P<token>[^/]++)/router$#s', $pathinfo, $matches)) {
+                if (preg_match('#^/_profiler/(?P<token>[^/]++)/router$#sD', $pathinfo, $matches)) {
                     return $this->mergeDefaults(array_replace($matches, array('_route' => '_profiler_router')), array (  '_controller' => 'web_profiler.controller.router:panelAction',));
                 }
 
                 // _profiler_exception
-                if (preg_match('#^/_profiler/(?P<token>[^/]++)/exception$#s', $pathinfo, $matches)) {
+                if (preg_match('#^/_profiler/(?P<token>[^/]++)/exception$#sD', $pathinfo, $matches)) {
                     return $this->mergeDefaults(array_replace($matches, array('_route' => '_profiler_exception')), array (  '_controller' => 'web_profiler.controller.exception:showAction',));
                 }
 
                 // _profiler_exception_css
-                if (preg_match('#^/_profiler/(?P<token>[^/]++)/exception\\.css$#s', $pathinfo, $matches)) {
+                if (preg_match('#^/_profiler/(?P<token>[^/]++)/exception\\.css$#sD', $pathinfo, $matches)) {
                     return $this->mergeDefaults(array_replace($matches, array('_route' => '_profiler_exception_css')), array (  '_controller' => 'web_profiler.controller.exception:cssAction',));
                 }
 
             }
 
             // _twig_error_test
-            if (0 === strpos($pathinfo, '/_error') && preg_match('#^/_error/(?P<code>\\d+)(?:\\.(?P<_format>[^/]++))?$#s', $pathinfo, $matches)) {
+            if (0 === strpos($pathinfo, '/_error') && preg_match('#^/_error/(?P<code>\\d+)(?:\\.(?P<_format>[^/]++))?$#sD', $pathinfo, $matches)) {
                 return $this->mergeDefaults(array_replace($matches, array('_route' => '_twig_error_test')), array (  '_controller' => 'twig.controller.preview_error:previewErrorPageAction',  '_format' => 'html',));
             }
 
@@ -109,38 +112,85 @@ class appDevDebugProjectContainerUrlMatcher extends Symfony\Bundle\FrameworkBund
             return array (  '_controller' => 'PostBundle\\Controller\\DefaultController::indexAction',  '_route' => 'post_default_index',);
         }
 
+        // add_student
+        if ('/students/add' === $pathinfo) {
+            $ret = array (  '_controller' => 'AppBundle\\Controller\\StudentController:addStudentAction',  '_format' => NULL,  '_route' => 'add_student',);
+            if (!in_array($canonicalMethod, array('GET'))) {
+                $allow = array_merge($allow, array('GET'));
+                goto not_add_student;
+            }
+
+            return $ret;
+        }
+        not_add_student:
+
+        // app_student_addstudent
+        if ('/student/add' === $pathinfo) {
+            return array (  '_controller' => 'AppBundle\\Controller\\StudentController::addStudentAction',  '_route' => 'app_student_addstudent',);
+        }
+
         if (0 === strpos($pathinfo, '/api')) {
-            if (0 === strpos($pathinfo, '/api/category')) {
+            if (0 === strpos($pathinfo, '/api/student/add')) {
+                // api_add_student
+                if ('/api/student/add' === $pathinfo) {
+                    $ret = array (  '_controller' => 'AppBundle\\Controller\\StudentController:apiAddStudentAction',  '_format' => NULL,  '_route' => 'api_add_student',);
+                    if (!in_array($requestMethod, array('POST'))) {
+                        $allow = array_merge($allow, array('POST'));
+                        goto not_api_add_student;
+                    }
+
+                    return $ret;
+                }
+                not_api_add_student:
+
+                // app_student_apiaddstudent
+                if ('/api/student/add' === $pathinfo) {
+                    $ret = array (  '_controller' => 'AppBundle\\Controller\\StudentController::apiAddStudentAction',  '_route' => 'app_student_apiaddstudent',);
+                    if (!in_array($requestMethod, array('POST'))) {
+                        $allow = array_merge($allow, array('POST'));
+                        goto not_app_student_apiaddstudent;
+                    }
+
+                    return $ret;
+                }
+                not_app_student_apiaddstudent:
+
+            }
+
+            elseif (0 === strpos($pathinfo, '/api/category')) {
                 // app_category_postcategory
                 if ('/api/category/add' === $pathinfo) {
-                    if ('POST' !== $canonicalMethod) {
-                        $allow[] = 'POST';
+                    $ret = array (  '_controller' => 'AppBundle\\Controller\\CategoryController::postCategoryAction',  '_route' => 'app_category_postcategory',);
+                    if (!in_array($requestMethod, array('POST'))) {
+                        $allow = array_merge($allow, array('POST'));
                         goto not_app_category_postcategory;
                     }
 
-                    return array (  '_controller' => 'AppBundle\\Controller\\CategoryController::postCategoryAction',  '_route' => 'app_category_postcategory',);
+                    return $ret;
                 }
                 not_app_category_postcategory:
 
                 // app_category_putcategory
-                if (0 === strpos($pathinfo, '/api/category/edit') && preg_match('#^/api/category/edit/(?P<id>[^/]++)$#s', $pathinfo, $matches)) {
-                    if ('PUT' !== $canonicalMethod) {
-                        $allow[] = 'PUT';
+                if (0 === strpos($pathinfo, '/api/category/edit') && preg_match('#^/api/category/edit/(?P<id>[^/]++)$#sD', $pathinfo, $matches)) {
+                    $ret = $this->mergeDefaults(array_replace($matches, array('_route' => 'app_category_putcategory')), array (  '_controller' => 'AppBundle\\Controller\\CategoryController::putCategoryAction',));
+                    if (!in_array($requestMethod, array('PUT'))) {
+                        $allow = array_merge($allow, array('PUT'));
                         goto not_app_category_putcategory;
                     }
 
-                    return $this->mergeDefaults(array_replace($matches, array('_route' => 'app_category_putcategory')), array (  '_controller' => 'AppBundle\\Controller\\CategoryController::putCategoryAction',));
+                    return $ret;
                 }
                 not_app_category_putcategory:
 
                 // app_category_removecategory
-                if (0 === strpos($pathinfo, '/api/category/remove') && preg_match('#^/api/category/remove/(?P<id>[^/]++)$#s', $pathinfo, $matches)) {
-                    if ('DELETE' !== $canonicalMethod) {
-                        $allow[] = 'DELETE';
+                if (0 === strpos($pathinfo, '/api/category/remove') && preg_match('#^/api/category/remove/(?P<id>[^/]++)$#sD', $pathinfo, $matches)) {
+                    $ret = $this->mergeDefaults(array_replace($matches, array('_route' => 'app_category_removecategory')), array (  '_controller' => 'AppBundle\\Controller\\CategoryController::removeCategoryAction',));
+                    if (!in_array($requestMethod, array('DELETE'))) {
+                        $allow = array_merge($allow, array('DELETE'));
                         goto not_app_category_removecategory;
                     }
 
-                    return $this->mergeDefaults(array_replace($matches, array('_route' => 'app_category_removecategory')), array (  '_controller' => 'AppBundle\\Controller\\CategoryController::removeCategoryAction',));
+                    return $ret;
                 }
                 not_app_category_removecategory:
 
@@ -148,24 +198,26 @@ class appDevDebugProjectContainerUrlMatcher extends Symfony\Bundle\FrameworkBund
 
             elseif (0 === strpos($pathinfo, '/api/categories')) {
                 // app_category_getcategories
-                if (preg_match('#^/api/categories/(?P<page>[^/]++)$#s', $pathinfo, $matches)) {
-                    if ('GET' !== $canonicalMethod) {
-                        $allow[] = 'GET';
+                if (preg_match('#^/api/categories/(?P<page>[^/]++)$#sD', $pathinfo, $matches)) {
+                    $ret = $this->mergeDefaults(array_replace($matches, array('_route' => 'app_category_getcategories')), array (  '_controller' => 'AppBundle\\Controller\\CategoryController::getCategoriesAction',));
+                    if (!in_array($canonicalMethod, array('GET'))) {
+                        $allow = array_merge($allow, array('GET'));
                         goto not_app_category_getcategories;
                     }
 
-                    return $this->mergeDefaults(array_replace($matches, array('_route' => 'app_category_getcategories')), array (  '_controller' => 'AppBundle\\Controller\\CategoryController::getCategoriesAction',));
+                    return $ret;
                 }
                 not_app_category_getcategories:
 
                 // app_category_getallcategories
-                if ('/api/categories' === $pathinfo) {
-                    if ('GET' !== $canonicalMethod) {
-                        $allow[] = 'GET';
+                if ('/api/categories_old' === $pathinfo) {
+                    $ret = array (  '_controller' => 'AppBundle\\Controller\\CategoryController::getAllCategoriesAction',  '_route' => 'app_category_getallcategories',);
+                    if (!in_array($canonicalMethod, array('GET'))) {
+                        $allow = array_merge($allow, array('GET'));
                         goto not_app_category_getallcategories;
                     }
 
-                    return array (  '_controller' => 'AppBundle\\Controller\\CategoryController::getAllCategoriesAction',  '_route' => 'app_category_getallcategories',);
+                    return $ret;
                 }
                 not_app_category_getallcategories:
 
@@ -174,46 +226,50 @@ class appDevDebugProjectContainerUrlMatcher extends Symfony\Bundle\FrameworkBund
             elseif (0 === strpos($pathinfo, '/api/post')) {
                 // app_post_postpost
                 if ('/api/post/add' === $pathinfo) {
-                    if ('POST' !== $canonicalMethod) {
-                        $allow[] = 'POST';
+                    $ret = array (  '_controller' => 'AppBundle\\Controller\\PostController::postPostAction',  '_route' => 'app_post_postpost',);
+                    if (!in_array($requestMethod, array('POST'))) {
+                        $allow = array_merge($allow, array('POST'));
                         goto not_app_post_postpost;
                     }
 
-                    return array (  '_controller' => 'AppBundle\\Controller\\PostController::postPostAction',  '_route' => 'app_post_postpost',);
+                    return $ret;
                 }
                 not_app_post_postpost:
 
                 // app_post_putpost
-                if (0 === strpos($pathinfo, '/api/post/edit') && preg_match('#^/api/post/edit/(?P<id>\\d+)$#s', $pathinfo, $matches)) {
-                    if ('PUT' !== $canonicalMethod) {
-                        $allow[] = 'PUT';
+                if (0 === strpos($pathinfo, '/api/post/edit') && preg_match('#^/api/post/edit/(?P<id>\\d+)$#sD', $pathinfo, $matches)) {
+                    $ret = $this->mergeDefaults(array_replace($matches, array('_route' => 'app_post_putpost')), array (  '_controller' => 'AppBundle\\Controller\\PostController::putPostAction',));
+                    if (!in_array($requestMethod, array('PUT'))) {
+                        $allow = array_merge($allow, array('PUT'));
                         goto not_app_post_putpost;
                     }
 
-                    return $this->mergeDefaults(array_replace($matches, array('_route' => 'app_post_putpost')), array (  '_controller' => 'AppBundle\\Controller\\PostController::putPostAction',));
+                    return $ret;
                 }
                 not_app_post_putpost:
 
                 if (0 === strpos($pathinfo, '/api/posts')) {
                     // app_post_getpostsbycategory
-                    if (0 === strpos($pathinfo, '/api/posts/category') && preg_match('#^/api/posts/category/(?P<id>[^/]++)$#s', $pathinfo, $matches)) {
-                        if ('GET' !== $canonicalMethod) {
-                            $allow[] = 'GET';
+                    if (0 === strpos($pathinfo, '/api/posts/category') && preg_match('#^/api/posts/category/(?P<id>[^/]++)$#sD', $pathinfo, $matches)) {
+                        $ret = $this->mergeDefaults(array_replace($matches, array('_route' => 'app_post_getpostsbycategory')), array (  '_controller' => 'AppBundle\\Controller\\PostController::getPostsByCategoryAction',));
+                        if (!in_array($canonicalMethod, array('GET'))) {
+                            $allow = array_merge($allow, array('GET'));
                             goto not_app_post_getpostsbycategory;
                         }
 
-                        return $this->mergeDefaults(array_replace($matches, array('_route' => 'app_post_getpostsbycategory')), array (  '_controller' => 'AppBundle\\Controller\\PostController::getPostsByCategoryAction',));
+                        return $ret;
                     }
                     not_app_post_getpostsbycategory:
 
                     // app_post_getposts
-                    if (preg_match('#^/api/posts/(?P<page>[^/]++)$#s', $pathinfo, $matches)) {
-                        if ('GET' !== $canonicalMethod) {
-                            $allow[] = 'GET';
+                    if (preg_match('#^/api/posts/(?P<page>[^/]++)$#sD', $pathinfo, $matches)) {
+                        $ret = $this->mergeDefaults(array_replace($matches, array('_route' => 'app_post_getposts')), array (  '_controller' => 'AppBundle\\Controller\\PostController::getPostsAction',));
+                        if (!in_array($canonicalMethod, array('GET'))) {
+                            $allow = array_merge($allow, array('GET'));
                             goto not_app_post_getposts;
                         }
 
-                        return $this->mergeDefaults(array_replace($matches, array('_route' => 'app_post_getposts')), array (  '_controller' => 'AppBundle\\Controller\\PostController::getPostsAction',));
+                        return $ret;
                     }
                     not_app_post_getposts:
 
@@ -221,23 +277,25 @@ class appDevDebugProjectContainerUrlMatcher extends Symfony\Bundle\FrameworkBund
 
                 // app_post_getpost
                 if ('/api/post/{id]' === $pathinfo) {
-                    if ('GET' !== $canonicalMethod) {
-                        $allow[] = 'GET';
+                    $ret = array (  '_controller' => 'AppBundle\\Controller\\PostController::getPostAction',  '_route' => 'app_post_getpost',);
+                    if (!in_array($canonicalMethod, array('GET'))) {
+                        $allow = array_merge($allow, array('GET'));
                         goto not_app_post_getpost;
                     }
 
-                    return array (  '_controller' => 'AppBundle\\Controller\\PostController::getPostAction',  '_route' => 'app_post_getpost',);
+                    return $ret;
                 }
                 not_app_post_getpost:
 
                 // app_post_removepost
-                if (0 === strpos($pathinfo, '/api/post/remove') && preg_match('#^/api/post/remove/(?P<id>[^/]++)$#s', $pathinfo, $matches)) {
-                    if ('DELETE' !== $canonicalMethod) {
-                        $allow[] = 'DELETE';
+                if (0 === strpos($pathinfo, '/api/post/remove') && preg_match('#^/api/post/remove/(?P<id>[^/]++)$#sD', $pathinfo, $matches)) {
+                    $ret = $this->mergeDefaults(array_replace($matches, array('_route' => 'app_post_removepost')), array (  '_controller' => 'AppBundle\\Controller\\PostController::removePostAction',));
+                    if (!in_array($requestMethod, array('DELETE'))) {
+                        $allow = array_merge($allow, array('DELETE'));
                         goto not_app_post_removepost;
                     }
 
-                    return $this->mergeDefaults(array_replace($matches, array('_route' => 'app_post_removepost')), array (  '_controller' => 'AppBundle\\Controller\\PostController::removePostAction',));
+                    return $ret;
                 }
                 not_app_post_removepost:
 
@@ -248,21 +306,27 @@ class appDevDebugProjectContainerUrlMatcher extends Symfony\Bundle\FrameworkBund
         // homepage
         if ('' === $trimmedPathinfo) {
             $ret = array (  '_controller' => 'AppBundle\\Controller\\DefaultController::indexAction',  '_route' => 'homepage',);
-            if (substr($pathinfo, -1) !== '/') {
+            if ('/' === substr($pathinfo, -1)) {
+                // no-op
+            } elseif ('GET' !== $canonicalMethod) {
+                goto not_homepage;
+            } else {
                 return array_replace($ret, $this->redirect($rawPathinfo.'/', 'homepage'));
             }
 
             return $ret;
         }
+        not_homepage:
 
         // app.swagger_ui
         if ('/doc' === $pathinfo) {
-            if ('GET' !== $canonicalMethod) {
-                $allow[] = 'GET';
+            $ret = array (  '_controller' => 'nelmio_api_doc.controller.swagger_ui',  '_route' => 'app.swagger_ui',);
+            if (!in_array($canonicalMethod, array('GET'))) {
+                $allow = array_merge($allow, array('GET'));
                 goto not_appswagger_ui;
             }
 
-            return array (  '_controller' => 'nelmio_api_doc.controller.swagger_ui',  '_route' => 'app.swagger_ui',);
+            return $ret;
         }
         not_appswagger_ui:
 

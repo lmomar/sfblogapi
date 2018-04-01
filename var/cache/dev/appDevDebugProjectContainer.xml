@@ -188,8 +188,6 @@
     <parameter key="router.cache_class_prefix">appDevDebugProjectContainer</parameter>
     <parameter key="request_listener.http_port">80</parameter>
     <parameter key="request_listener.https_port">443</parameter>
-    <parameter key="serializer.mapping.cache.file">/var/vhosts/sfblogapi/web/var/cache/dev/serialization.php</parameter>
-    <parameter key="serializer.mapping.cache.prefix"></parameter>
     <parameter key="security.authentication.trust_resolver.anonymous_class">Symfony\Component\Security\Core\Authentication\Token\AnonymousToken</parameter>
     <parameter key="security.authentication.trust_resolver.rememberme_class">Symfony\Component\Security\Core\Authentication\Token\RememberMeToken</parameter>
     <parameter key="security.role_hierarchy.roles" type="collection"/>
@@ -629,10 +627,19 @@
     <service id="AppBundle\Controller\PostController" class="AppBundle\Controller\PostController" public="true" autowire="true" autoconfigure="true">
       <tag name="controller.service_arguments"/>
     </service>
+    <service id="AppBundle\Controller\StudentController" class="AppBundle\Controller\StudentController" public="true" autowire="true" autoconfigure="true">
+      <tag name="controller.service_arguments"/>
+    </service>
     <service id="AppBundle\Form\CategoryType" class="AppBundle\Form\CategoryType" public="false" autowire="true" autoconfigure="true">
       <tag name="form.type"/>
     </service>
+    <service id="AppBundle\Form\CourseType" class="AppBundle\Form\CourseType" public="false" autowire="true" autoconfigure="true">
+      <tag name="form.type"/>
+    </service>
     <service id="AppBundle\Form\PostType" class="AppBundle\Form\PostType" public="false" autowire="true" autoconfigure="true">
+      <tag name="form.type"/>
+    </service>
+    <service id="AppBundle\Form\StudentType" class="AppBundle\Form\StudentType" public="false" autowire="true" autoconfigure="true">
       <tag name="form.type"/>
     </service>
     <service id="controller_name_converter" class="Symfony\Bundle\FrameworkBundle\Controller\ControllerNameParser" public="false">
@@ -651,7 +658,7 @@
     </service>
     <service id="argument_resolver.service" class="Symfony\Component\HttpKernel\Controller\ArgumentResolver\ServiceValueResolver" public="false">
       <tag name="controller.argument_value_resolver" priority="-50"/>
-      <argument type="service" id="service_locator.qddeodf"/>
+      <argument type="service" id="service_locator.sr6ctxe"/>
     </service>
     <service id="argument_resolver.default" class="Symfony\Component\HttpKernel\Controller\ArgumentResolver\DefaultValueResolver" public="false">
       <tag name="controller.argument_value_resolver" priority="-100"/>
@@ -884,7 +891,9 @@
       </argument>
       <argument type="collection">
         <argument>AppBundle\Form\CategoryType</argument>
+        <argument>AppBundle\Form\CourseType</argument>
         <argument>AppBundle\Form\PostType</argument>
+        <argument>AppBundle\Form\StudentType</argument>
         <argument>Symfony\Component\Form\Extension\Core\Type\FormType</argument>
         <argument>Symfony\Component\Form\Extension\Core\Type\ChoiceType</argument>
         <argument>Symfony\Bridge\Doctrine\Form\Type\EntityType</argument>
@@ -897,6 +906,7 @@
         <argument>Symfony\Component\Form\Extension\Validator\Type\UploadValidatorExtension</argument>
         <argument>Symfony\Component\Form\Extension\Csrf\Type\FormTypeCsrfExtension</argument>
         <argument>Symfony\Component\Form\Extension\DataCollector\Type\DataCollectorTypeExtension</argument>
+        <argument>Nelmio\ApiDocBundle\Form\Extension\DocumentationExtension</argument>
       </argument>
       <argument type="collection">
         <argument>Symfony\Component\Form\Extension\Validator\ValidatorTypeGuesser</argument>
@@ -1096,7 +1106,7 @@
       <argument type="service" id="form.resolved_type_factory"/>
     </service>
     <service id="form.extension" class="Symfony\Component\Form\Extension\DependencyInjection\DependencyInjectionExtension" public="false">
-      <argument type="service" id="service_locator.pv5xnh3"/>
+      <argument type="service" id="service_locator.83ogk6k"/>
       <argument type="collection">
         <argument key="Symfony\Component\Form\Extension\Core\Type\FormType" type="iterator">
           <argument type="service" id="form.type_extension.form.http_foundation"/>
@@ -1104,6 +1114,7 @@
           <argument type="service" id="form.type_extension.upload.validator"/>
           <argument type="service" id="form.type_extension.csrf"/>
           <argument type="service" id="form.type_extension.form.data_collector"/>
+          <argument type="service" id="Nelmio\ApiDocBundle\Form\Extension\DocumentationExtension"/>
         </argument>
         <argument key="Symfony\Component\Form\Extension\Core\Type\RepeatedType" type="iterator">
           <argument type="service" id="form.type_extension.repeated.validator"/>
@@ -2150,7 +2161,7 @@
       <tag name="routing.loader"/>
       <argument type="service" id="file_locator"/>
     </service>
-    <service id="routing.loader.glob" class="Symfony\Component\Config\Loader\GlobFileLoader" public="false">
+    <service id="routing.loader.glob" class="Symfony\Component\Routing\Loader\GlobFileLoader" public="false">
       <tag name="routing.loader"/>
       <argument type="service" id="file_locator"/>
     </service>
@@ -2249,11 +2260,12 @@
       </call>
     </service>
     <service id="annotations.dummy_registry" class="Doctrine\Common\Annotations\AnnotationRegistry" public="false">
-      <call method="registerLoader">
+      <call method="registerUniqueLoader">
         <argument>class_exists</argument>
       </call>
     </service>
     <service id="annotations.cached_reader" class="Doctrine\Common\Annotations\CachedReader" public="false">
+      <tag name="annotations.cached_reader"/>
       <argument type="service" id="annotations.reader"/>
       <argument type="service" id="1_ArrayCache~.akpegm"/>
       <argument>true</argument>
@@ -2277,95 +2289,8 @@
       <argument>false</argument>
       <argument type="service" id="cache.property_access" on-invalid="ignore"/>
     </service>
-    <service id="serializer" class="Symfony\Component\Serializer\Serializer" public="true">
-      <argument type="collection">
-        <argument type="service" id="fos_rest.serializer.form_error_normalizer"/>
-        <argument type="service" id="serializer.normalizer.json_serializable"/>
-        <argument type="service" id="serializer.normalizer.datetime"/>
-        <argument type="service" id="serializer.normalizer.dateinterval"/>
-        <argument type="service" id="serializer.normalizer.data_uri"/>
-        <argument type="service" id="serializer.denormalizer.array"/>
-        <argument type="service" id="serializer.normalizer.object"/>
-      </argument>
-      <argument type="collection">
-        <argument type="service" id="serializer.encoder.xml"/>
-        <argument type="service" id="serializer.encoder.json"/>
-        <argument type="service" id="serializer.encoder.yaml"/>
-        <argument type="service" id="serializer.encoder.csv"/>
-      </argument>
-    </service>
-    <service id="serializer.normalizer.dateinterval" class="Symfony\Component\Serializer\Normalizer\DateIntervalNormalizer" public="false">
-      <tag name="serializer.normalizer" priority="-915"/>
-    </service>
-    <service id="serializer.normalizer.data_uri" class="Symfony\Component\Serializer\Normalizer\DataUriNormalizer" public="false">
-      <tag name="serializer.normalizer" priority="-920"/>
-    </service>
-    <service id="serializer.normalizer.datetime" class="Symfony\Component\Serializer\Normalizer\DateTimeNormalizer" public="false">
-      <tag name="serializer.normalizer" priority="-910"/>
-    </service>
-    <service id="serializer.normalizer.json_serializable" class="Symfony\Component\Serializer\Normalizer\JsonSerializableNormalizer" public="false">
-      <tag name="serializer.normalizer" priority="-900"/>
-    </service>
-    <service id="serializer.normalizer.object" class="Symfony\Component\Serializer\Normalizer\ObjectNormalizer" public="false">
-      <tag name="serializer.normalizer" priority="-1000"/>
-      <argument type="service" id="serializer.mapping.class_metadata_factory"/>
-      <argument>null</argument>
-      <argument type="service" id="property_accessor"/>
-      <argument type="service" id="property_info" on-invalid="ignore"/>
-    </service>
-    <service id="serializer.denormalizer.array" class="Symfony\Component\Serializer\Normalizer\ArrayDenormalizer" public="false">
-      <tag name="serializer.normalizer" priority="-990"/>
-    </service>
-    <service id="serializer.mapping.chain_loader" class="Symfony\Component\Serializer\Mapping\Loader\LoaderChain" public="false">
-      <argument type="collection"/>
-    </service>
-    <service id="serializer.mapping.class_metadata_factory" class="Symfony\Component\Serializer\Mapping\Factory\ClassMetadataFactory" public="false">
-      <argument type="service" id="serializer.mapping.chain_loader"/>
-      <argument>null</argument>
-    </service>
-    <service id="serializer.mapping.cache_warmer" class="Symfony\Bundle\FrameworkBundle\CacheWarmer\SerializerCacheWarmer" public="false">
-      <tag name="kernel.cache_warmer"/>
-      <argument type="collection"/>
-      <argument>/var/vhosts/sfblogapi/web/var/cache/dev/serialization.php</argument>
-      <argument type="service" id="cache.serializer"/>
-    </service>
-    <service id="serializer.mapping.cache.symfony" class="Symfony\Component\Cache\Adapter\PhpArrayAdapter">
-      <argument>/var/vhosts/sfblogapi/web/var/cache/dev/serialization.php</argument>
-      <argument type="service" id="cache.serializer"/>
-      <factory class="Symfony\Component\Cache\Adapter\PhpArrayAdapter" method="create"/>
-    </service>
-    <service id="serializer.mapping.cache.doctrine.apc" class="Doctrine\Common\Cache\ApcCache" public="false">
-      <call method="setNamespace">
-        <argument></argument>
-      </call>
-      <deprecated>The "%service_id%" service is deprecated since Symfony 3.2 and will be removed in 4.0. APCu should now be automatically used when available.</deprecated>
-    </service>
-    <service id="serializer.mapping.cache.apc" class="Doctrine\Common\Cache\ApcCache" public="false">
-      <call method="setNamespace">
-        <argument></argument>
-      </call>
-      <deprecated>The "%service_id%" service is deprecated since Symfony 3.1 and will be removed in 4.0. APCu should now be automatically used when available.</deprecated>
-    </service>
-    <service id="serializer.encoder.xml" class="Symfony\Component\Serializer\Encoder\XmlEncoder" public="false">
-      <tag name="serializer.encoder"/>
-    </service>
-    <service id="serializer.encoder.json" class="Symfony\Component\Serializer\Encoder\JsonEncoder" public="false">
-      <tag name="serializer.encoder"/>
-    </service>
-    <service id="serializer.encoder.yaml" class="Symfony\Component\Serializer\Encoder\YamlEncoder" public="false">
-      <tag name="serializer.encoder"/>
-    </service>
-    <service id="serializer.encoder.csv" class="Symfony\Component\Serializer\Encoder\CsvEncoder" public="false">
-      <tag name="serializer.encoder"/>
-    </service>
-    <service id="serializer.name_converter.camel_case_to_snake_case" class="Symfony\Component\Serializer\NameConverter\CamelCaseToSnakeCaseNameConverter" public="false"/>
-    <service id="property_info.serializer_extractor" class="Symfony\Component\PropertyInfo\Extractor\SerializerExtractor" public="false">
-      <tag name="property_info.list_extractor" priority="-999"/>
-      <argument type="service" id="serializer.mapping.class_metadata_factory"/>
-    </service>
     <service id="property_info" class="Symfony\Component\PropertyInfo\PropertyInfoExtractor">
       <argument type="iterator">
-        <argument type="service" id="property_info.serializer_extractor"/>
         <argument type="service" id="property_info.reflection_extractor"/>
         <argument type="service" id="doctrine.orm.default_entity_manager.property_info_extractor"/>
       </argument>
@@ -2996,13 +2921,13 @@
         <argument type="service" id="twig.extension.weblink"/>
       </call>
       <call method="addExtension">
+        <argument type="service" id="twig.extension.dump"/>
+      </call>
+      <call method="addExtension">
         <argument type="service" id="doctrine.twig.doctrine_extension"/>
       </call>
       <call method="addExtension">
         <argument type="service" id="jms_serializer.twig_extension.serializer"/>
-      </call>
-      <call method="addExtension">
-        <argument type="service" id="twig.extension.dump"/>
       </call>
       <call method="addExtension">
         <argument type="service" id="twig.extension.webprofiler"/>
@@ -3384,8 +3309,8 @@
         <argument type="service" id="debug.log_processor"/>
       </call>
     </service>
-    <service id="monolog.activation_strategy.not_found" class="Symfony\Bridge\Monolog\Handler\FingersCrossed\NotFoundActivationStrategy"/>
-    <service id="monolog.handler.fingers_crossed.error_level_activation_strategy" class="Monolog\Handler\FingersCrossed\ErrorLevelActivationStrategy"/>
+    <service id="monolog.activation_strategy.not_found" class="Symfony\Bridge\Monolog\Handler\FingersCrossed\NotFoundActivationStrategy" abstract="true"/>
+    <service id="monolog.handler.fingers_crossed.error_level_activation_strategy" class="Monolog\Handler\FingersCrossed\ErrorLevelActivationStrategy" abstract="true"/>
     <service id="monolog.formatter.chrome_php" class="Monolog\Formatter\ChromePHPFormatter" public="false"/>
     <service id="monolog.formatter.gelf_message" class="Monolog\Formatter\GelfMessageFormatter" public="false"/>
     <service id="monolog.formatter.html" class="Monolog\Formatter\HtmlFormatter" public="false"/>
@@ -4761,6 +4686,9 @@
       <argument type="service" id="property_info"/>
       <argument type="service" id="annotations.cached_reader"/>
     </service>
+    <service id="Nelmio\ApiDocBundle\Form\Extension\DocumentationExtension" class="Nelmio\ApiDocBundle\Form\Extension\DocumentationExtension">
+      <tag name="form.type_extension" extended_type="Symfony\Component\Form\Extension\Core\Type\FormType" extended-type="Symfony\Component\Form\Extension\Core\Type\FormType"/>
+    </service>
     <service id="nelmio_api_doc.generator.default" class="Nelmio\ApiDocBundle\ApiDocGenerator" public="false">
       <argument type="tagged" tag="nelmio_api_doc.describer.default"/>
       <argument type="tagged" tag="nelmio_api_doc.model_describer"/>
@@ -4774,7 +4702,10 @@
       <factory method="filter">
         <service class="Nelmio\ApiDocBundle\Routing\FilteredRouteCollectionBuilder">
           <argument type="collection">
-            <argument>^/api(?!/doc$)</argument>
+            <argument key="path_patterns" type="collection">
+              <argument>^/api(?!/doc$)</argument>
+            </argument>
+            <argument key="host_patterns" type="collection"/>
           </argument>
         </service>
       </factory>
@@ -4916,7 +4847,7 @@
       <argument>2</argument>
       <argument>bottom</argument>
       <argument type="service" id="router.default" on-invalid="ignore"/>
-      <argument>^/(app(_[\w]+)?\.php/)?_wdt</argument>
+      <argument>^/((index|app(_[\w]+)?)\.php/)?_wdt</argument>
       <argument type="service" id="web_profiler.csp.handler"/>
     </service>
     <service id="sensio_distribution.security_checker" class="SensioLabs\Security\SecurityChecker"/>
@@ -4967,23 +4898,17 @@
     <service id="abstract.instanceof.AppBundle\Controller\DefaultController" class="AppBundle\Controller\DefaultController" public="true" autowire="true" autoconfigure="true" abstract="true"/>
     <service id="instanceof.Symfony\Bundle\FrameworkBundle\Controller\Controller.0.AppBundle\Controller\PostController" class="AppBundle\Controller\PostController" public="true" autowire="true" abstract="true"/>
     <service id="abstract.instanceof.AppBundle\Controller\PostController" class="AppBundle\Controller\PostController" public="true" autowire="true" autoconfigure="true" abstract="true"/>
+    <service id="instanceof.Symfony\Bundle\FrameworkBundle\Controller\Controller.0.AppBundle\Controller\StudentController" class="AppBundle\Controller\StudentController" public="true" autowire="true" abstract="true"/>
+    <service id="abstract.instanceof.AppBundle\Controller\StudentController" class="AppBundle\Controller\StudentController" public="true" autowire="true" autoconfigure="true" abstract="true"/>
     <service id="instanceof.Symfony\Component\Form\FormTypeInterface.0.AppBundle\Form\CategoryType" class="AppBundle\Form\CategoryType" public="false" autowire="true" abstract="true"/>
     <service id="abstract.instanceof.AppBundle\Form\CategoryType" class="AppBundle\Form\CategoryType" public="false" autowire="true" autoconfigure="true" abstract="true"/>
+    <service id="instanceof.Symfony\Component\Form\FormTypeInterface.0.AppBundle\Form\CourseType" class="AppBundle\Form\CourseType" public="false" autowire="true" abstract="true"/>
+    <service id="abstract.instanceof.AppBundle\Form\CourseType" class="AppBundle\Form\CourseType" public="false" autowire="true" autoconfigure="true" abstract="true"/>
     <service id="instanceof.Symfony\Component\Form\FormTypeInterface.0.AppBundle\Form\PostType" class="AppBundle\Form\PostType" public="false" autowire="true" abstract="true"/>
     <service id="abstract.instanceof.AppBundle\Form\PostType" class="AppBundle\Form\PostType" public="false" autowire="true" autoconfigure="true" abstract="true"/>
-    <service id="service_locator.vbhdain" class="Symfony\Component\DependencyInjection\ServiceLocator" public="false">
-      <tag name="container.service_locator"/>
-      <argument type="collection"/>
-    </service>
-    <service id="service_locator.f4ewnep" class="Symfony\Component\DependencyInjection\ServiceLocator" public="false">
-      <tag name="container.service_locator"/>
-      <argument type="collection"/>
-    </service>
-    <service id="service_locator.s6jeblv" class="Symfony\Component\DependencyInjection\ServiceLocator" public="false">
-      <tag name="container.service_locator"/>
-      <argument type="collection"/>
-    </service>
-    <service id="service_locator.qddeodf" class="Symfony\Component\DependencyInjection\ServiceLocator" public="false">
+    <service id="instanceof.Symfony\Component\Form\FormTypeInterface.0.AppBundle\Form\StudentType" class="AppBundle\Form\StudentType" public="false" autowire="true" abstract="true"/>
+    <service id="abstract.instanceof.AppBundle\Form\StudentType" class="AppBundle\Form\StudentType" public="false" autowire="true" autoconfigure="true" abstract="true"/>
+    <service id="service_locator.sr6ctxe" class="Symfony\Component\DependencyInjection\ServiceLocator" public="false">
       <tag name="container.service_locator"/>
       <argument type="collection"/>
     </service>
@@ -5094,11 +5019,13 @@
         <argument key="inline" type="service" id="fragment.renderer.inline"/>
       </argument>
     </service>
-    <service id="service_locator.pv5xnh3" class="Symfony\Component\DependencyInjection\ServiceLocator" public="false">
+    <service id="service_locator.83ogk6k" class="Symfony\Component\DependencyInjection\ServiceLocator" public="false">
       <tag name="container.service_locator"/>
       <argument type="collection">
         <argument key="AppBundle\Form\CategoryType" type="service" id="AppBundle\Form\CategoryType"/>
+        <argument key="AppBundle\Form\CourseType" type="service" id="AppBundle\Form\CourseType"/>
         <argument key="AppBundle\Form\PostType" type="service" id="AppBundle\Form\PostType"/>
+        <argument key="AppBundle\Form\StudentType" type="service" id="AppBundle\Form\StudentType"/>
         <argument key="Symfony\Bridge\Doctrine\Form\Type\EntityType" type="service" id="form.type.entity"/>
         <argument key="Symfony\Component\Form\Extension\Core\Type\ChoiceType" type="service" id="form.type.choice"/>
         <argument key="Symfony\Component\Form\Extension\Core\Type\FormType" type="service" id="form.type.form"/>
@@ -5228,10 +5155,6 @@
       </call>
     </service>
     <service id="monolog.handler.null_internal" class="Monolog\Handler\NullHandler"/>
-    <service id="service_locator.sr6ctxe" class="Symfony\Component\DependencyInjection\ServiceLocator" public="false">
-      <tag name="container.service_locator"/>
-      <argument type="collection"/>
-    </service>
     <service id="fos_rest.request_matcher.6d27357678da78ac461e8b851ac5bf83a1f9471f9d410dff7d760712cb7770b80848bf9c" class="Symfony\Component\HttpFoundation\RequestMatcher" public="false">
       <argument>^/_profiler|_wdt/</argument>
       <argument>null</argument>
@@ -5446,14 +5369,6 @@
     <service id="annotation_reader" alias="annotations.cached_reader"/>
     <service id="Doctrine\Common\Annotations\Reader" alias="annotations.cached_reader" public="false"/>
     <service id="Symfony\Component\PropertyAccess\PropertyAccessorInterface" alias="property_accessor" public="false"/>
-    <service id="Symfony\Component\Serializer\SerializerInterface" alias="serializer" public="false"/>
-    <service id="Symfony\Component\Serializer\Normalizer\NormalizerInterface" alias="serializer" public="false"/>
-    <service id="Symfony\Component\Serializer\Normalizer\DenormalizerInterface" alias="serializer" public="false"/>
-    <service id="Symfony\Component\Serializer\Encoder\EncoderInterface" alias="serializer" public="false"/>
-    <service id="Symfony\Component\Serializer\Encoder\DecoderInterface" alias="serializer" public="false"/>
-    <service id="serializer.property_accessor" alias="property_accessor" public="false"/>
-    <service id="Symfony\Component\Serializer\Normalizer\ObjectNormalizer" alias="serializer.normalizer.object" public="false"/>
-    <service id="Symfony\Component\Serializer\Mapping\Factory\ClassMetadataFactoryInterface" alias="serializer.mapping.class_metadata_factory" public="false"/>
     <service id="Symfony\Component\PropertyInfo\PropertyInfoExtractorInterface" alias="property_info" public="false"/>
     <service id="Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface" alias="security.authorization_checker" public="false"/>
     <service id="Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface" alias="security.token_storage" public="false"/>
@@ -5507,7 +5422,7 @@
     <service id="FOS\RestBundle\Request\ParamFetcherInterface" alias="fos_rest.request.param_fetcher"/>
     <service id="fos_rest.router" alias="router.default"/>
     <service id="fos_rest.templating" alias="templating.engine.delegating"/>
-    <service id="fos_rest.view_handler" alias="fos_rest.view_handler.default"/>
+    <service id="fos_rest.view_handler" alias="fos_rest.view_handler.default" public="true"/>
     <service id="fos_rest.inflector" alias="fos_rest.inflector.doctrine"/>
     <service id="jms_serializer.metadata_driver" alias="jms_serializer.metadata.doctrine_type_driver" public="true"/>
     <service id="jms_serializer.metadata.cache" alias="jms_serializer.metadata.cache.file_cache" public="false"/>
@@ -5537,5 +5452,6 @@
     <service id="controller_resolver" alias="debug.controller_resolver" public="false"/>
     <service id="argument_resolver" alias="debug.argument_resolver" public="false"/>
     <service id="security.access.decision_manager" alias="debug.security.access.decision_manager" public="false"/>
+    <service id="fos_rest.serializer.jms_handler_registry" alias="jms_serializer.handler_registry" public="true"/>
   </services>
 </container>

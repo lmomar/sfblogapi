@@ -2,10 +2,15 @@ post:
     resource: "@PostBundle/Controller/"
     type:     annotation
     prefix:   /
+app_student:
+    resource: '@AppBundle/Controller/StudentController.php'
+    type: rest
+    prefix: /
 
 app:
     resource: '@AppBundle/Controller/'
     type: annotation
+
 
 app.swagger_ui:
     path: /doc

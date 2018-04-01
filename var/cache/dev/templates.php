@@ -85,6 +85,7 @@
   'DoctrineBundle:Collector:db.html.twig' => __DIR__.'/../../../vendor/doctrine/doctrine-bundle/Resources/views/Collector/db.html.twig',
   'DoctrineBundle:Collector:explain.html.twig' => __DIR__.'/../../../vendor/doctrine/doctrine-bundle/Resources/views/Collector/explain.html.twig',
   'AppBundle:Post:index.html.twig' => __DIR__.'/../../../src/AppBundle/Resources/views/Post/index.html.twig',
+  'AppBundle:Student:add.html.twig' => __DIR__.'/../../../src/AppBundle/Resources/views/Student/add.html.twig',
   'PostBundle:Default:index.html.twig' => __DIR__.'/../../../src/PostBundle/Resources/views/Default/index.html.twig',
   'NelmioApiDocBundle:SwaggerUi:index.html.twig' => __DIR__.'/../../../vendor/nelmio/api-doc-bundle/Resources/views/SwaggerUi/index.html.twig',
   'DebugBundle:Profiler:dump.html.twig' => __DIR__.'/../../../vendor/symfony/symfony/src/Symfony/Bundle/DebugBundle/Resources/views/Profiler/dump.html.twig',

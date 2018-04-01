@@ -155,7 +155,7 @@ class CategoryController extends Controller
     }
 
     /**
-     * @Rest\Get(path="/categories")
+     * @Rest\Get(path="/categories_old")
      * @Rest\View()
      * @SWG\Tag(name="Category")
      * @SWG\Response(
