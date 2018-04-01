@@ -1,13 +1,10 @@
-<<<<<<< HEAD
 .idea
 /app/config/parameters.yml
 /build/
 /bin/phpunit
-=======
 /.web-server-pid
 /app/config/parameters.yml
 /build/
->>>>>>> 2e9f606ccfd6eb368eebc7825ba16847a2a01074
 /phpunit.xml
 /var/*
 !/var/cache
@@ -19,13 +16,11 @@
 !/var/sessions
 /var/sessions/*
 !var/sessions/.gitkeep
-<<<<<<< HEAD
 /vendor/
 /vendor
 vendor/
 /web/bundles/
-=======
 !var/SymfonyRequirements.php
 /vendor/
 /web/bundles/
->>>>>>> 2e9f606ccfd6eb368eebc7825ba16847a2a01074
+
